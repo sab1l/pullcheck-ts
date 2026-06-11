@@ -1,0 +1,20 @@
+{
+  "name": "pullcheck-ts",
+  "version": "1.0.0",
+  "description": "Automated PR monitoring test suite — schema validation and business rule checks",
+  "private": true,
+  "scripts": {
+    "test": "playwright test",
+    "test:unit": "playwright test tests/unit",
+    "test:int": "playwright test tests/integration",
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.44.0",
+    "@types/node": "^20.0.0",
+    "typescript": "^5.4.0"
+  },
+  "dependencies": {
+    "zod": "^3.23.0"
+  }
+}
