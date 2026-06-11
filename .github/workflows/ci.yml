@@ -36,7 +36,18 @@ jobs:
           # Optional: set in GitHub repo secrets to raise rate limit from 60 to 5000 req/hr
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Upload test report on failure
+      # Upload JUnit XML on every run (pass or fail) so CI tooling always has
+      # structured test counts, durations, and failure details to parse.
+      - name: Upload JUnit test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: junit-results
+          path: test-results/results.xml
+          retention-days: 30
+
+      # Upload the full HTML report only on failure for deeper investigation.
+      - name: Upload HTML report on failure
         if: failure()
         uses: actions/upload-artifact@v4
         with:

@@ -65,11 +65,16 @@ test.describe(`GitHub open PRs — ${TARGET_REPO}`, () => {
     // There should be at least one open non-draft PR in an active repository.
     expect(eligibleCount).toBeGreaterThan(0);
 
-    // Log a human-readable summary for CI output, even on success.
-    console.log(
-      `[${TARGET_REPO}] Total fetched: ${rawPulls.length} | ` +
+    // Attach a structured summary to the test result so it appears in every report
+    // (HTML, JUnit XML) regardless of pass/fail status.
+    // console.log is avoided here because Playwright only surfaces stdout in CI
+    // reports when the test fails — a passing run's log output is silently dropped.
+    test.info().annotations.push({
+      type: 'summary',
+      description:
+        `Total fetched: ${rawPulls.length} | ` +
         `Eligible (open, not draft): ${eligibleCount} | ` +
-        `Excluded (draft): ${rawPulls.length - eligibleCount}`
-    );
+        `Excluded (draft): ${rawPulls.length - eligibleCount}`,
+    });
   });
 });
