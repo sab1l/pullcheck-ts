@@ -1,15 +1,19 @@
-// Responsibility: runtime structural validation for a single GitHub API pull request item.
-// Uses Zod so that any unexpected shape from the API surface fails with a clear field path.
-// Business rules (open state, draft exclusion) live in src/domain/, not here.
+/*
+ * Responsibility: runtime structural validation for a single GitHub API pull request item.
+ * Uses Zod so that any unexpected shape from the API surface fails with a clear field path.
+ * Business rules (open state, draft exclusion) live in src/domain/, not here.
+ */
 
 import { z } from 'zod';
 import type { GitHubPull } from '@app-types/github.types';
 
+/** Validates the author sub-object embedded in every GitHub pull request item. */
 export const GitHubPullAuthorSchema = z.object({
   login: z.string(),
   id: z.number(),
 });
 
+/** Validates the shape of a single GitHub pull request item returned by the REST API. */
 export const GitHubPullSchema = z.object({
   id: z.number(),
   number: z.number(),

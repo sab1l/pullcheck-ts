@@ -1,19 +1,24 @@
-// Responsibility: runtime structural validation for the middleware aggregator payload.
-// Validates shape only — counting and label business rules live in src/domain/.
+/*
+ * Responsibility: runtime structural validation for the middleware aggregator payload.
+ * Validates shape only — counting and label business rules live in src/domain/.
+ */
 
 import { z } from 'zod';
 import type { MiddlewarePayload } from '@app-types/middleware.types';
 
+/** Validates the author sub-object within a middleware pull request item. */
 export const PullRequestAuthorSchema = z.object({
   username: z.string(),
   role: z.string(),
 });
 
+/** Validates the metadata sub-object (draft flag and review comment count) of a pull request. */
 export const PullRequestMetaSchema = z.object({
   is_draft: z.boolean(),
   review_comments: z.number().int().nonnegative(),
 });
 
+/** Validates a single pull request entry in the middleware aggregator payload. */
 export const PullRequestItemSchema = z.object({
   id: z.number(),
   title: z.string(),
@@ -23,6 +28,7 @@ export const PullRequestItemSchema = z.object({
   meta: PullRequestMetaSchema,
 });
 
+/** Validates the full middleware aggregator payload received from an upstream service. */
 export const MiddlewarePayloadSchema = z.object({
   product_id: z.string(),
   // null is rejected here by default: z.number() does not accept null unless

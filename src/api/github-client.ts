@@ -1,42 +1,46 @@
-// Responsibility: fetch all open pull requests from the GitHub REST API.
-// Handles HTTP requests and pagination only — no assertions, no business rules.
-//
-// Pagination strategy:
-//   GitHub returns up to 100 items per page. We loop through pages starting at 1
-//   and stop when a page comes back empty (no more results). We do not rely on the
-//   Link header because checking for an empty page is simpler and equally correct.
-//
-// Memory footprint options (for reference — current implementation uses a flat array):
-//   A) Flat array (current): accumulate all items, return once complete.
-//      Simple to use; peak memory = total PR count × item size (~1-2 KB each).
-//      For this challenge: 442 PRs × ~2 KB = ~900 KB — negligible.
-//   B) Async generator (yield one page at a time): caller receives each page as
-//      it arrives and can discard it before the next page is fetched.
-//      Lower peak memory; changes the function signature (requires for-await-of).
-//   C) Per-page callback: caller provides a function invoked for each page; zero
-//      accumulation; most memory-efficient; least reusable for callers that need
-//      the full list (e.g. schema validation across all items at once).
-//   Decision: flat array is the right trade-off here — the dataset is small and
-//   the full list is needed for complete schema validation in the test.
+/*
+ * Responsibility: fetch all open pull requests from the GitHub REST API.
+ * Handles HTTP requests and pagination only — no assertions, no business rules.
+ *
+ * Pagination strategy:
+ *   GitHub returns up to 100 items per page. We loop through pages starting at 1
+ *   and stop when a page comes back empty (no more results). We do not rely on the
+ *   Link header because checking for an empty page is simpler and equally correct.
+ *
+ * Memory footprint options (for reference — current implementation uses a flat array):
+ *   A) Flat array (current): accumulate all items, return once complete.
+ *      Simple to use; peak memory = total PR count × item size (~1-2 KB each).
+ *      For this challenge: 442 PRs × ~2 KB = ~900 KB — negligible.
+ *   B) Async generator (yield one page at a time): caller receives each page as
+ *      it arrives and can discard it before the next page is fetched.
+ *      Lower peak memory; changes the function signature (requires for-await-of).
+ *   C) Per-page callback: caller provides a function invoked for each page; zero
+ *      accumulation; most memory-efficient; least reusable for callers that need
+ *      the full list (e.g. schema validation across all items at once).
+ *   Decision: flat array is the right trade-off here — the dataset is small and
+ *   the full list is needed for complete schema validation in the test.
+ */
 
 import type { APIRequestContext } from '@playwright/test';
 import type { GitHubPull } from '@app-types/github.types';
+import { GITHUB_API_BASE } from '@config';
 
-const GITHUB_API_BASE = 'https://api.github.com';
 const PAGE_SIZE = 100; // GitHub's maximum items per page
 
-// Hard limit on the number of pages to fetch.
-//
-// Options for a page-loop guard:
-//   A) Constant upper bound (chosen): simple, zero config, throws clearly if exceeded.
-//      Trade-off: any repo with more than MAX_PAGES × PAGE_SIZE open PRs will error.
-//      At 50 pages × 100 items = 5000 PRs, this is far beyond any real-world repo.
-//   B) Configurable parameter with a default: caller controls the limit at call site.
-//      Trade-off: more flexible but adds API surface and requires callers to think
-//      about the value.
-//   C) Parse the Link response header rel="last" to know the page count upfront.
-//      Trade-off: more accurate and avoids the empty-page terminator request, but
-//      requires header string parsing and an upfront request before the loop.
+/*
+ * Hard limit on the number of pages to fetch.
+ *
+ * Options for a page-loop guard:
+ *   A) Constant upper bound (chosen): simple, zero config, throws clearly if exceeded.
+ *      Trade-off: any repo with more than MAX_PAGES × PAGE_SIZE open PRs will error.
+ *      At 50 pages × 100 items = 5000 PRs, this is far beyond any real-world repo.
+ *   B) Configurable parameter with a default: caller controls the limit at call site.
+ *      Trade-off: more flexible but adds API surface and requires callers to think
+ *      about the value.
+ *   C) Parse the Link response header rel="last" to know the page count upfront.
+ *      Trade-off: more accurate and avoids the empty-page terminator request, but
+ *      requires header string parsing and an upfront request before the loop.
+ */
 const MAX_PAGES = 50;
 
 /**

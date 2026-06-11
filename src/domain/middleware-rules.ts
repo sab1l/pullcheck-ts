@@ -1,10 +1,12 @@
-// Responsibility: business rule validation for the middleware aggregator payload.
-// Each function enforces exactly one rule and throws with a descriptive message on violation.
-// Pure functions — no HTTP calls, no schema parsing, no side effects.
-//
-// Assumption: callers must parse the payload through MiddlewarePayloadSchema before
-// calling these functions. The TypeScript types guarantee non-null values here;
-// null fields are rejected at the schema layer before execution reaches this module.
+/*
+ * Responsibility: business rule validation for the middleware aggregator payload.
+ * Each function enforces exactly one rule and throws with a descriptive message on violation.
+ * Pure functions — no HTTP calls, no schema parsing, no side effects.
+ *
+ * Assumption: callers must parse the payload through MiddlewarePayloadSchema before
+ * calling these functions. The TypeScript types guarantee non-null values here;
+ * null fields are rejected at the schema layer before execution reaches this module.
+ */
 
 import type { MiddlewarePayload } from '@app-types/middleware.types';
 import { IntegrityError, BusinessRuleError } from '@errors/index';
