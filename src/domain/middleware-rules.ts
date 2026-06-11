@@ -40,12 +40,6 @@ export function assertCountIntegrity(payload: MiddlewarePayload): void {
  * Every violation is collected so a single run surfaces all offending PRs at once,
  * rather than stopping at the first one and requiring multiple re-runs to find them all.
  *
- * Logic note on the guard condition (isHighPriority && isDraft):
- *   - false && false → condition is false → no violation recorded (correct: PR is neither)
- *   - true  && false → condition is false → no violation recorded (correct: high-priority but not draft)
- *   - false && true  → condition is false → no violation recorded (correct: draft but not high-priority)
- *   - true  && true  → condition is true  → violation recorded (rule broken)
- *
  * Assumption: payload.pull_requests is guaranteed non-null by the schema validation layer.
  */
 export function assertHighPriorityNotDraft(payload: MiddlewarePayload): void {
