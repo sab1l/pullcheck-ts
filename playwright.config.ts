@@ -32,10 +32,21 @@ export default defineConfig({
     {
       name: 'unit',
       testDir: './tests/unit',
+      // Unit tests exercise pure functions with no external dependencies.
+      // A failure here is always a code or logic problem — retrying would only
+      // hide the defect and slow down feedback.
+      retries: 0,
     },
     {
       name: 'integration',
       testDir: './tests/integration',
+      // Integration tests hit the live GitHub API and can fail due to transient
+      // network issues (rate limit spike, DNS timeout, API blip). Up to 3 retries
+      // let Playwright distinguish:
+      //   - Flaky test: fails then passes on a retry → marked as "flaky" in
+      //     the JUnit XML and terminal output; CI does not block on flaky.
+      //   - Broken test: fails all 3 retries → marked as "failed"; CI blocks.
+      retries: 3,
     },
   ],
 });
