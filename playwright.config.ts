@@ -7,6 +7,16 @@ export default defineConfig({
   // Each test file gets a fresh browser context; timeout generous for live API
   timeout: 30_000,
 
+  // Use 2 workers to match the 2 vCPUs available on GitHub Actions free runners.
+  // Works well locally too — conservative enough to avoid resource contention.
+  workers: 2,
+
+  // Allow every individual test to run in its own worker slot rather than
+  // serialising all tests within a file. Without this, workers > 1 has no
+  // effect when all tests live in a single file (which is our case for both
+  // the unit and integration test suites).
+  fullyParallel: true,
+
   // Two reporters run in parallel on every test run:
   //   line  — one-line-per-test terminal output for local dev and CI logs
   //   junit — JUnit XML written to test-results/results.xml for CI tooling
