@@ -1,5 +1,7 @@
 # pullcheck-ts
 
+[![CI](https://github.com/sab1l/pullcheck-ts/actions/workflows/ci.yml/badge.svg)](https://github.com/sab1l/pullcheck-ts/actions)
+
 Automated PR monitoring test suite — schema validation and business rule checks for pull request data.
 
 ## Problem interpretation
@@ -93,9 +95,6 @@ The Zod schemas are tied to the TypeScript interfaces via a compile-time assigna
 ```bash
 # Install dependencies
 npm install
-
-# Install the Playwright browser used for the test runner
-npx playwright install chromium
 
 # Run all tests (unit + integration)
 npm test
