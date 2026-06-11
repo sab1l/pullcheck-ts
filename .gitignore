@@ -9,3 +9,9 @@ coverage/
 # Playwright
 playwright-report/
 test-results/
+
+# Cursor IDE — workspace-local config, not part of the submission
+.cursor/
+AGENTS.md
+*.code-workspace
+*.pdf
