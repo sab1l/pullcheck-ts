@@ -15,13 +15,15 @@ The goal is a suite that is **maintainable and reusable**: swap the repository n
 
 ## Architecture
 
-The codebase is split into four layers. Each layer has one job and must not reach into the responsibilities of another.
+The codebase is split into six directories under `src/`. Each has one job and must not reach into the responsibilities of another.
 
 ```
 src/
 ├── types/      TypeScript interfaces — data shape contracts, no runtime logic
 ├── schemas/    Zod schemas — runtime structural validation, no business rules
 ├── domain/     Pure functions — business rules, no HTTP calls
+├── errors/     Custom error classes — IntegrityError, BusinessRuleError
+├── fixtures/   Committed JSON fixtures for unit tests (no network required)
 └── api/        HTTP client — fetch + pagination, no assertions
 
 tests/
