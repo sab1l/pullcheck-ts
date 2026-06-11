@@ -10,12 +10,12 @@
 // 60 req/hr, which is enough for one run of this test.
 
 import { test, expect } from '@playwright/test';
-import { fetchAllOpenPulls } from '../../src/api/github-client';
-import { GitHubPullSchema } from '../../src/schemas/github-pull.schema';
+import { fetchAllOpenPulls } from '@api/github-client';
+import { GitHubPullSchema } from '@schemas/github-pull.schema';
 import {
   filterEligibleOpenPrs,
   countEligibleOpenPrs,
-} from '../../src/domain/open-pr-rules';
+} from '@domain/open-pr-rules';
 
 const TARGET_REPO = 'appwrite/appwrite';
 

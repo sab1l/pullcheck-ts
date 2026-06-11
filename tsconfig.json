@@ -9,7 +9,16 @@
     "resolveJsonModule": true,
     "outDir": "dist",
     "rootDir": ".",
-    "moduleResolution": "node"
+    "moduleResolution": "node",
+    "baseUrl": ".",
+    "paths": {
+      "@api/*":       ["src/api/*"],
+      "@domain/*":    ["src/domain/*"],
+      "@errors/*":    ["src/errors/*"],
+      "@schemas/*":   ["src/schemas/*"],
+      "@fixtures/*":  ["src/fixtures/*"],
+      "@app-types/*": ["src/types/*"]
+    }
   },
   "include": ["src/**/*", "tests/**/*", "playwright.config.ts"],
   "exclude": ["node_modules", "dist"]

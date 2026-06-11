@@ -3,7 +3,7 @@
 // Business rules (open state, draft exclusion) live in src/domain/, not here.
 
 import { z } from 'zod';
-import type { GitHubPull } from '../types/github.types';
+import type { GitHubPull } from '@app-types/github.types';
 
 export const GitHubPullAuthorSchema = z.object({
   login: z.string(),

@@ -1,0 +1,36 @@
+---
+description: Senior QE take-home signals — README, test strategy, CI, and submission hygiene.
+alwaysApply: true
+---
+
+# Take-home quality bar
+
+## What reviewers evaluate
+
+1. **Structure** — Can they find API, rules, and tests in under a minute?
+2. **Test design** — Happy path + meaningful negative case (high-priority + draft).
+3. **Communication** — README explains pagination, assumptions, and trade-offs.
+4. **CI mindset** — Deterministic unit tests; integration failures are diagnosable.
+
+## README must cover (before submit)
+
+- Problem interpretation
+- Architecture (layers or diagram)
+- Pagination approach for full GitHub dataset
+- Schema vs business-rule validation split
+- Assumptions (draft field, `state=open`, rate limits)
+- How to run (`npm install && npm test`)
+
+## Test strategy note
+
+State explicitly in README or comments:
+
+- What is **automated** vs what you would leave manual and why
+- What you would add with more time (retries, recorded fixtures, shared npm package)
+
+## Red flags to avoid
+
+- Business rules copy-pasted in test files instead of `src/domain/`
+- Zero negative tests for Part 2
+- Submitting without running tests on a fresh clone
+- Scope creep without a written cut line in README

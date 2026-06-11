@@ -1,0 +1,21 @@
+{
+  "folders": [
+    {
+      "path": ".",
+      "name": "LuxExperience challenge"
+    },
+    {
+      "path": "../interviews/targets/luxexperience-senior-qa-backend",
+      "name": "Interview prep (LuxExperience)"
+    }
+  ],
+  "settings": {
+    "editor.formatOnSave": true,
+    "files.exclude": {
+      "**/node_modules": true
+    }
+  },
+  "extensions": {
+    "recommendations": ["dbaeumer.vscode-eslint", "vitest.explorer"]
+  }
+}

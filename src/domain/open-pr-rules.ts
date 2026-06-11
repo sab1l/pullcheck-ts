@@ -1,7 +1,7 @@
 // Responsibility: business rules for counting eligible open pull requests.
 // Pure functions — no HTTP calls, no Zod parsing, no side effects.
 
-import type { GitHubPull } from '../types/github.types';
+import type { GitHubPull } from '@app-types/github.types';
 
 /**
  * Returns only the PRs that count toward the open PR total.

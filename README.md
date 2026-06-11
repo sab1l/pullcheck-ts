@@ -80,7 +80,7 @@ The Zod schemas are tied to the TypeScript interfaces via a compile-time assigna
 
 - **`draft` field:** The GitHub API field `draft: boolean` is the authoritative source for draft status. This field has been stable since GitHub introduced draft PRs in 2019.
 - **`state=open` on the API request:** We pass `state=open` to reduce the payload. We then re-check `state === 'open'` inside the domain filter as a defensive measure against unexpected items.
-- **Rate limits:** Unauthenticated requests are capped at 60/hr. The integration test makes roughly `ceil(total_open_prs / 100) + 1` requests per run, so well within that limit for a single CI job. Setting `GITHUB_TOKEN` raises the cap to 5000/hr.
+- **Rate limits:** Unauthenticated requests are capped at 60/hr. For context, `appwrite/appwrite` had 442 open PRs when this suite was written — that means 5 pages of 100 items each, plus one final empty page that signals the end: 6 HTTP requests in total. For any repository, the request count equals the number of full pages needed, rounded up to the nearest whole number, plus one empty-page terminator. This is well within the unauthenticated limit for a single CI job. Setting `GITHUB_TOKEN` raises the cap to 5000/hr.
 - **Middleware payload:** The `last_updated` field is validated as a string. Parsing it as a date is out of scope — it was not part of the validation conditions in the challenge.
 - **Part 2 is synchronous / pure:** The middleware payload is treated as a committed fixture. No mocking library is needed because the domain functions are plain TypeScript with no dependencies.
 

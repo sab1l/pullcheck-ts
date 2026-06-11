@@ -2,7 +2,7 @@
 // Validates shape only — counting and label business rules live in src/domain/.
 
 import { z } from 'zod';
-import type { MiddlewarePayload } from '../types/middleware.types';
+import type { MiddlewarePayload } from '@app-types/middleware.types';
 
 export const PullRequestAuthorSchema = z.object({
   username: z.string(),
@@ -25,8 +25,14 @@ export const PullRequestItemSchema = z.object({
 
 export const MiddlewarePayloadSchema = z.object({
   product_id: z.string(),
+  // null is rejected here by default: z.number() does not accept null unless
+  // .nullable() is explicitly added. If the payload sets this field to null or
+  // omits it entirely, Zod throws before any domain function is reached.
   total_open_prs: z.number().int().nonnegative(),
   last_updated: z.string(),
+  // Same null-rejection guarantee: z.array() requires an actual array value.
+  // A null or missing pull_requests field is caught at this schema layer, not
+  // in the domain functions which assume pre-validated input.
   pull_requests: z.array(PullRequestItemSchema),
 });
 
