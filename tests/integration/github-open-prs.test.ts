@@ -16,25 +16,36 @@ import {
   filterEligibleOpenPrs,
   countEligibleOpenPrs,
 } from '@domain/open-pr-rules';
+import type { GitHubPull } from '@app-types/github.types';
 
 const TARGET_REPO = 'appwrite/appwrite';
 
-test.describe(`GitHub open PRs — ${TARGET_REPO}`, () => {
-  test('fetches all pages and every item matches the expected schema', async ({
-    request,
-  }) => {
-    const rawPulls = await fetchAllOpenPulls(request, TARGET_REPO);
+// Populated once in beforeAll and shared across both tests in this suite.
+// Declared outside the describe block so both tests can read it directly.
+let sharedPulls: GitHubPull[] = [];
 
+test.describe(`GitHub open PRs — ${TARGET_REPO}`, () => {
+  // Serial mode is required here because fullyParallel: true is set globally.
+  // Without it, each test would run in its own worker and beforeAll would execute
+  // once per worker — fetching the full PR list twice instead of once.
+  // With serial mode, beforeAll runs once in a single worker before both tests.
+  test.describe.configure({ mode: 'serial' });
+
+  test.beforeAll(async ({ request }) => {
+    sharedPulls = await fetchAllOpenPulls(request, TARGET_REPO);
+  });
+
+  test('fetches all pages and every item matches the expected schema', async () => {
     // We must receive at least one PR for the assertion to be meaningful.
     // If this fails, either the repo is empty or the API call itself failed.
-    expect(rawPulls.length).toBeGreaterThan(0);
+    expect(sharedPulls.length).toBeGreaterThan(0);
 
     // Validate each item against the Zod schema.
     // Collect all failures so the error output shows every offending PR at once,
     // rather than stopping at the first one.
     const schemaFailures: string[] = [];
 
-    for (const item of rawPulls) {
+    for (const item of sharedPulls) {
       const result = GitHubPullSchema.safeParse(item);
 
       if (!result.success) {
@@ -52,11 +63,9 @@ test.describe(`GitHub open PRs — ${TARGET_REPO}`, () => {
     ).toHaveLength(0);
   });
 
-  test('eligible open PR count is consistent and non-zero', async ({ request }) => {
-    const rawPulls = await fetchAllOpenPulls(request, TARGET_REPO);
-
-    const eligiblePulls = filterEligibleOpenPrs(rawPulls);
-    const eligibleCount = countEligibleOpenPrs(rawPulls);
+  test('eligible open PR count is consistent and non-zero', async () => {
+    const eligiblePulls = filterEligibleOpenPrs(sharedPulls);
+    const eligibleCount = countEligibleOpenPrs(sharedPulls);
 
     // The two helper functions must agree with each other (filterEligibleOpenPrs
     // is the implementation that countEligibleOpenPrs delegates to).
@@ -67,14 +76,12 @@ test.describe(`GitHub open PRs — ${TARGET_REPO}`, () => {
 
     // Attach a structured summary to the test result so it appears in every report
     // (HTML, JUnit XML) regardless of pass/fail status.
-    // console.log is avoided here because Playwright only surfaces stdout in CI
-    // reports when the test fails — a passing run's log output is silently dropped.
     test.info().annotations.push({
       type: 'summary',
       description:
-        `Total fetched: ${rawPulls.length} | ` +
+        `Total fetched: ${sharedPulls.length} | ` +
         `Eligible (open, not draft): ${eligibleCount} | ` +
-        `Excluded (draft): ${rawPulls.length - eligibleCount}`,
+        `Excluded (draft): ${sharedPulls.length - eligibleCount}`,
     });
   });
 });
