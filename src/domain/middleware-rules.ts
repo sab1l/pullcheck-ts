@@ -1,24 +1,13 @@
-/*
- * Responsibility: business rule validation for the middleware aggregator payload.
- * Each function enforces exactly one rule and throws with a descriptive message on violation.
- * Pure functions — no HTTP calls, no schema parsing, no side effects.
- *
- * Assumption: callers must parse the payload through MiddlewarePayloadSchema before
- * calling these functions. The TypeScript types guarantee non-null values here;
- * null fields are rejected at the schema layer before execution reaches this module.
- */
+// Business rule validation for the middleware aggregator payload.
+// Pure functions — no HTTP calls, no schema parsing, no side effects.
+// Callers must parse input through MiddlewarePayloadSchema before calling these functions.
 
 import type { MiddlewarePayload } from '@app-types/middleware.types';
 import { IntegrityError, BusinessRuleError } from '@errors/index';
 
 /**
  * Rule 1 — Count integrity.
- *
- * The total_open_prs field must match the actual number of items in pull_requests.
- * A mismatch indicates the aggregator produced an inconsistent payload.
- *
- * Assumption: payload.total_open_prs and payload.pull_requests are guaranteed
- * non-null by the schema validation layer.
+ * total_open_prs must match the actual length of pull_requests.
  */
 export function assertCountIntegrity(payload: MiddlewarePayload): void {
   const declaredCount = payload.total_open_prs;
@@ -35,14 +24,8 @@ export function assertCountIntegrity(payload: MiddlewarePayload): void {
 /**
  * Rule 2 — High-priority PRs must not be drafts.
  *
- * If a PR carries the label "high-priority" it is expected to be ready for review.
- * Marking it as a draft at the same time is a conflicting state that must be caught.
- *
- * This is a soft assert: all PRs in the list are evaluated before throwing.
- * Every violation is collected so a single run surfaces all offending PRs at once,
- * rather than stopping at the first one and requiring multiple re-runs to find them all.
- *
- * Assumption: payload.pull_requests is guaranteed non-null by the schema validation layer.
+ * Soft assert: all PRs are evaluated before throwing so every violation
+ * surfaces in a single run rather than requiring multiple re-runs.
  */
 export function assertHighPriorityNotDraft(payload: MiddlewarePayload): void {
   const violations: string[] = [];

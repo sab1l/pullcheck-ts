@@ -30,7 +30,7 @@ src/
 
 tests/
 ├── unit/       Domain and schema tests — no network, fixture-driven
-└── integration/ End-to-end test — live GitHub API
+└── api/        Live GitHub API tests — no mocking
 ```
 
 Data flow for Part 1:
@@ -39,7 +39,8 @@ Data flow for Part 1:
 Playwright request fixture
         │
         ▼
-src/api/github-client.ts    ← fetches pages, returns GitHubPull[]
+src/api/github-client.ts    ← fetchAllPullRequests (paginating base)
+                               fetchAllOpenPulls (convenience wrapper)
         │
         ▼
 src/schemas/github-pull.schema.ts   ← validates shape of each item
@@ -48,14 +49,16 @@ src/schemas/github-pull.schema.ts   ← validates shape of each item
 src/domain/open-pr-rules.ts         ← filters eligible PRs, returns count
         │
         ▼
-tests/integration/github-open-prs.test.ts   ← asserts, logs summary
+tests/api/github-open-prs.test.ts   ← asserts, logs summary
 ```
 
 ---
 
 ## Pagination
 
-GitHub's REST API returns pull requests one page at a time (up to 100 items per page). The client in `src/api/github-client.ts` uses a simple page-increment loop:
+GitHub's REST API returns pull requests one page at a time (up to 100 items per page). The client in `src/api/github-client.ts` exposes two functions: `fetchAllPullRequests(request, repo, state)` is the paginating base that accepts any `state` value (`'open'`, `'closed'`, or `'all'`); `fetchAllOpenPulls` is a thin wrapper that fixes `state` to `'open'`. Adding `fetchAllClosedPulls` in the future requires one line.
+
+The pagination loop in `fetchAllPullRequests`:
 
 1. Start at `page=1` with `per_page=100` and `state=open`.
 2. If the page returns items, append them and increment the page counter.
@@ -96,14 +99,14 @@ The Zod schemas are tied to the TypeScript interfaces via a compile-time assigna
 # Install dependencies
 npm install
 
-# Run all tests (unit + integration)
+# Run all tests (unit + api)
 npm test
 
 # Run unit tests only (no network required)
 npm run test:unit
 
-# Run integration tests only (requires internet access)
-npm run test:int
+# Run API tests only (requires internet access)
+npm run test:api
 
 # Type-check without running tests
 npm run typecheck
@@ -112,7 +115,7 @@ npm run typecheck
 To avoid GitHub rate limits, set a personal access token:
 
 ```bash
-GITHUB_TOKEN=ghp_yourtoken npm run test:int
+GITHUB_TOKEN=ghp_yourtoken npm run test:api
 ```
 
 ---
@@ -133,6 +136,6 @@ GITHUB_TOKEN=ghp_yourtoken npm run test:int
 ## With more time
 
 - **Retry on rate limit:** Detect `HTTP 429` or `HTTP 403` with `X-RateLimit-Remaining: 0` and wait until `X-RateLimit-Reset` before retrying.
-- **Recorded fixtures for integration tests:** Use `playwright` request interception or a tool like `nock` to record real API responses once and replay them in CI. This removes the network dependency and makes the integration tests deterministic.
+- **Recorded fixtures for API tests:** Use `playwright` request interception or a tool like `nock` to record real API responses once and replay them in CI. This removes the network dependency and makes the API tests deterministic.
 - **Shared npm package:** The `src/domain/` functions and `src/schemas/` are self-contained and have no runtime dependencies beyond Zod. They could be extracted into a versioned package for reuse across multiple product test suites.
 - **More negative schema tests:** Cover additional edge cases — empty `pull_requests` array, `null` values in optional fields, extra fields that should be ignored.
